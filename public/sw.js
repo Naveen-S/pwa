@@ -1,7 +1,8 @@
 self.addEventListener('install', (e) => {
     console.log('[Service Worker] Installing service worker! ', e);
     e.waitUntil(caches.open('static').then(cache => {
-        console.log('[Service Worker] Pre caching...')
+        console.log('[Service Worker] Pre caching...');
+        // Static caching.
         cache.addAll([
             '/',
             '/index.html',
@@ -30,12 +31,23 @@ self.addEventListener('fetch', (e) => {
     // e.respondWith(null);
 
     // e.respondWith(fetch(e.request));
+
+    // If you find the request in the cache serve from cache else make a fetch request.
+    // During fetch request cache the response(dynamic cache) so you can respond from cache later.
     e.respondWith(
         caches.match(e.request).then(response => {
             if(response) {
                 return response;
             } else {
-                return fetch(e.request);
+                return fetch(e.request).then(res => { 
+                    return caches.open('dynamic').then(cache => { 
+                            // Dynamic caching
+                            cache.put(e.request.url, res.clone());
+                            return res;
+                    })
+                }).catch(err => {
+                    console.log('Handle error!');
+                });
             }
         })
     );
