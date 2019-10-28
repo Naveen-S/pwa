@@ -1,6 +1,9 @@
+var STATIC_CACHE_VERSION = 'static-v1';
+var DYNAMIC_CACHE_VERSION = 'dynamic-v1';
+
 self.addEventListener('install', (e) => {
     console.log('[Service Worker] Installing service worker! ', e);
-    e.waitUntil(caches.open('static').then(cache => {
+    e.waitUntil(caches.open(STATIC_CACHE_VERSION).then(cache => {
         console.log('[Service Worker] Pre caching...');
         // Static caching.
         cache.addAll([
@@ -21,6 +24,24 @@ self.addEventListener('install', (e) => {
 
 self.addEventListener('activate', (e) => {
     console.log('[Service Worker] Activating service worker! ', e);
+    // Cleaning up of Old Caches. 
+    // Why here? 
+    // To not to break the existing app while user is using the app. 
+    // And since Activation event is triggered only once after page renders for the first time its the best place.
+    
+    // Get the list of keys and delete the old one. After every update to normal src files update the CACHE VERSION above.
+    e.waitUntil(
+        caches.keys().then(keyList => {
+            return Promise.all(keyList.map(key => {
+                if(key !== STATIC_CACHE_VERSION && key !== DYNAMIC_CACHE_VERSION) {
+                    console.log('[Service Worker] Removing old cache.', key);
+                    return caches.delete(key);
+                } else {
+                    return null;
+                }
+            }))
+        })
+    );
     return self.clients.claim();
 })
 
@@ -40,7 +61,7 @@ self.addEventListener('fetch', (e) => {
                 return response;
             } else {
                 return fetch(e.request).then(res => { 
-                    return caches.open('dynamic').then(cache => { 
+                    return caches.open(DYNAMIC_CACHE_VERSION).then(cache => { 
                             // Dynamic caching
                             cache.put(e.request.url, res.clone());
                             return res;
