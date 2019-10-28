@@ -8,6 +8,10 @@ self.addEventListener('activate', (e) => {
 })
 
 self.addEventListener('fetch', (e) => {
-    console.log('[Service Worker] Listening to fetch event!', e);
-    e.respondWith(null);
+    // console.log('[Service Worker] Listening to fetch event!', e);
+    
+    // To not respond anything [Intercept and block fetch requests]
+    // e.respondWith(null);
+
+    e.respondWith(fetch(e.request));
 })
