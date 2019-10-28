@@ -1,4 +1,4 @@
-var STATIC_CACHE_VERSION = 'static-v1';
+var STATIC_CACHE_VERSION = 'static-v5';
 var DYNAMIC_CACHE_VERSION = 'dynamic-v1';
 
 self.addEventListener('install', (e) => {
@@ -63,7 +63,7 @@ self.addEventListener('fetch', (e) => {
                 return fetch(e.request).then(res => { 
                     return caches.open(DYNAMIC_CACHE_VERSION).then(cache => { 
                             // Dynamic caching
-                            cache.put(e.request.url, res.clone());
+                            // cache.put(e.request.url, res.clone());
                             return res;
                     })
                 }).catch(err => {

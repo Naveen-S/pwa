@@ -29,6 +29,15 @@ shareImageButton.addEventListener('click', openCreatePostModal);
 
 closeCreatePostModalButton.addEventListener('click', closeCreatePostModal);
 
+function saveForLater(e) {
+  console.log('clicked');
+  if('caches' in window) {
+    console.log('Inside ');
+    caches.open('user-requested').then(cache => {
+        cache.addAll(['https://httpbin.org/get','/src/images/sf-boat.jpg']);
+    });
+  }
+}
 
 function createCard() {
   var cardWrapper = document.createElement('div');
@@ -47,6 +56,10 @@ function createCard() {
   cardSupportingText.className = 'mdl-card__supporting-text';
   cardSupportingText.textContent = 'In San Francisco';
   cardSupportingText.style.textAlign = 'center';
+  var saveForLaterBtn = document.createElement('button');
+  saveForLaterBtn.textContent = 'Save for Later';
+  cardSupportingText.appendChild(saveForLaterBtn);
+  saveForLaterBtn.addEventListener('click', saveForLater);
   cardWrapper.appendChild(cardSupportingText);
   componentHandler.upgradeElement(cardWrapper);
   sharedMomentsArea.appendChild(cardWrapper);
