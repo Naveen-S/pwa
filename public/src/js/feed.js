@@ -29,13 +29,19 @@ shareImageButton.addEventListener('click', openCreatePostModal);
 
 closeCreatePostModalButton.addEventListener('click', closeCreatePostModal);
 
-function saveForLater(e) {
+// On demand caching
+/* function saveForLater(e) {
   console.log('clicked');
   if('caches' in window) {
     console.log('Inside ');
     caches.open('user-requested').then(cache => {
         cache.addAll(['https://httpbin.org/get','/src/images/sf-boat.jpg']);
     });
+  }
+} */
+function clearCards() {
+  while(sharedMomentsArea.hasChildNodes()) {
+    sharedMomentsArea.remove(sharedMomentsArea.lastChild);
   }
 }
 
@@ -56,19 +62,39 @@ function createCard() {
   cardSupportingText.className = 'mdl-card__supporting-text';
   cardSupportingText.textContent = 'In San Francisco';
   cardSupportingText.style.textAlign = 'center';
-  var saveForLaterBtn = document.createElement('button');
+  // On demand caching
+  /* var saveForLaterBtn = document.createElement('button');
   saveForLaterBtn.textContent = 'Save for Later';
   cardSupportingText.appendChild(saveForLaterBtn);
-  saveForLaterBtn.addEventListener('click', saveForLater);
+  saveForLaterBtn.addEventListener('click', saveForLater); */
   cardWrapper.appendChild(cardSupportingText);
   componentHandler.upgradeElement(cardWrapper);
   sharedMomentsArea.appendChild(cardWrapper);
 }
 
-fetch('https://httpbin.org/get')
+var url = 'https://httpbin.org/get';
+var isDataAlreadyLoadedFromNetwork = false;
+fetch(url)
   .then(function(res) {
     return res.json();
   })
   .then(function(data) {
+    console.log('From web ', data);
+    isDataAlreadyLoadedFromNetwork = true;
+    clearCards();
     createCard();
   });
+
+  if('caches' in window) {
+    caches.match(url).then(response => {
+      if(response) {
+        return response.json();
+      }
+    }).then(data => {
+      console.log('From cache ', data);
+      if(!isDataAlreadyLoadedFromNetwork) {
+        clearCards();
+        createCard();
+      }
+    })
+  }  

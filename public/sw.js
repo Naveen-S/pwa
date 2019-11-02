@@ -1,4 +1,4 @@
-var STATIC_CACHE_VERSION = 'static-v5';
+var STATIC_CACHE_VERSION = 'static-v7';
 var DYNAMIC_CACHE_VERSION = 'dynamic-v1';
 
 self.addEventListener('install', (e) => {
@@ -45,6 +45,7 @@ self.addEventListener('activate', (e) => {
     return self.clients.claim();
 })
 
+/*
 self.addEventListener('fetch', (e) => {
     // console.log('[Service Worker] Listening to fetch event!', e);
     
@@ -63,13 +64,27 @@ self.addEventListener('fetch', (e) => {
                 return fetch(e.request).then(res => { 
                     return caches.open(DYNAMIC_CACHE_VERSION).then(cache => { 
                             // Dynamic caching
-                            // cache.put(e.request.url, res.clone());
+                            cache.put(e.request.url, res.clone());
                             return res;
                     })
                 }).catch(err => {
                     console.log('Handle error!');
                 });
             }
+        })
+    );
+})
+*/
+
+// Strategy: Cache and then network 
+self.addEventListener('fetch', (e) => {
+    // console.log('[Service Worker] Listening to fetch event!', e);
+    e.respondWith(
+        caches.open(DYNAMIC_CACHE_VERSION).then(cache => {
+            return fetch(e.request).then(response => {
+                cache.put(e.request.url, response.clone());
+                return response;
+            })
         })
     );
 })
